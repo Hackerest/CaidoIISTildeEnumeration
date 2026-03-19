@@ -7,16 +7,14 @@ import tailwindCaido from "@caido/tailwindcss";
 import path from "path";
 import prefixwrap from "postcss-prefixwrap";
 
-const id = "frontend-vue";
+const id = "iis-tilde-enumeration";
 export default defineConfig({
   id,
-  name: "Frontend Vue",
-  description: "Plugin template with frontend using VueJS",
-  version: "0.0.0",
+  name: "IIS Tilde Enumeration",
+  description: "Enumerate IIS 8.3 shortnames from Caido using differential tilde probes.",
+  version: "0.1.0",
   author: {
-    name: "Caido Labs Inc.",
-    email: "dev@caido.io",
-    url: "https://caido.io",
+    name: "Luca",
   },
   plugins: [
     {

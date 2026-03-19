@@ -1,13 +1,16 @@
 {
-  "name": "frontend-vue",
-  "version": "0.0.0",
+  "name": "iis-tilde-enumeration",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "typecheck": "pnpm -r typecheck",
-    "lint": "eslint ./packages/**/src --fix",
+    "lint": "pnpm lint:fix",
+    "lint:fix": "eslint ./packages/**/src --fix",
+    "lint:check": "eslint ./packages/**/src",
     "knip": "knip",
     "build": "caido-dev build",
-    "watch": "caido-dev watch"
+    "watch": "caido-dev watch",
+    "hooks:install": "git config core.hooksPath .githooks"
   },
   "devDependencies": {
     "@caido-community/dev": "^0.1.3",

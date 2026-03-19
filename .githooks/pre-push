@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+pnpm lint:fix
+pnpm typecheck
+
+if ! git diff --quiet -- . ':(exclude)pnpm-lock.yaml'; then
+  echo "Pre-push hook applied lint/style fixes. Review, stage, and commit them before pushing."
+  exit 1
+fi

@@ -24,23 +24,27 @@ export const init = (sdk: FrontendSDK) => {
   const root = document.createElement("div");
   Object.assign(root.style, {
     height: "100%",
+    minHeight: "100%",
     width: "100%",
+    display: "flex",
   });
 
   // Set the ID of the root element
   // Replace this with the value of the prefixWrap plugin in caido.config.ts
   // This is necessary to prevent styling conflicts between plugins
-  root.id = `plugin--frontend-vue`;
+  root.id = `plugin--iis-tilde-enumeration`;
 
   // Mount the app to the root element
   app.mount(root);
 
   // Add the page to the navigation
   // Make sure to use a unique name for the page
-  sdk.navigation.addPage("/my-plugin", {
+  sdk.navigation.addPage("/plugins/iis-tilde-enumeration", {
     body: root,
   });
 
-  // Add a sidebar item
-  sdk.sidebar.registerItem("My Plugin", "/my-plugin");
+  sdk.sidebar.registerItem(
+    "IIS Tilde Enumeration",
+    "/plugins/iis-tilde-enumeration",
+  );
 };
