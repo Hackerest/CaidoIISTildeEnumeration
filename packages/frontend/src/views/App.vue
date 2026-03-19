@@ -16,8 +16,8 @@ const charset = ref("abcdefghijklmnopqrstuvwxyz0123456789_-");
 const nameMaxLength = ref(6);
 const extensionMaxLength = ref(3);
 const maxNumericSuffix = ref(3);
-const maxRequests = ref(800);
-const concurrency = ref(8);
+const maxRequests = ref(2000);
+const concurrency = ref(20);
 const createFinding = ref(true);
 const enumerateShortnames = ref(false);
 
@@ -107,6 +107,12 @@ const requestProgress = (job: ScanJob) => {
 const isStoppable = (job: ScanJob) =>
   job.finishedAt === undefined &&
   job.stage !== "cancelling" &&
+  job.status !== "cancelled" &&
+  job.status !== "completed" &&
+  job.status !== "failed";
+
+const showProgressBar = (job: ScanJob) =>
+  job.finishedAt === undefined &&
   job.status !== "cancelled" &&
   job.status !== "completed" &&
   job.status !== "failed";
@@ -431,6 +437,7 @@ onBeforeUnmount(() => {
               </div>
 
               <div
+                v-if="showProgressBar(job)"
                 class="mt-3 h-2 overflow-hidden rounded bg-surface-200 dark:bg-surface-700"
               >
                 <div
