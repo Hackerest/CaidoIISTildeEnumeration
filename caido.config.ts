@@ -14,7 +14,7 @@ export default defineConfig({
   name: "IIS Tilde Enumeration",
   description:
     "Enumerate IIS 8.3 shortnames from Caido using differential tilde probes.",
-  version: "0.1.0",
+  version: "0.1.1",
   author: {
     name: "Hackerest",
   },
