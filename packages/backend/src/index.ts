@@ -852,13 +852,33 @@ const isLastFileExt = async (
   options: NormalizedOptions,
   state: ScanState,
   profile: DetectionProfile,
-  input: string,
+  baseName: string,
+  numericSuffix: number,
+  extension: string,
 ): Promise<boolean> => {
-  const ext = input.split(".")[1] ?? "";
-  if (ext.length >= 3) {
+  if (extension.length === 0) {
+    return false;
+  }
+
+  if (extension.length >= options.extensionMaxLength) {
     return true;
   }
-  return !(await getStatus(sdk, options, state, profile, `${input}*`));
+
+  const exactCandidate = `${baseName}~${numericSuffix}.${extension}`;
+  const longerWildcard = `${exactCandidate}.*`;
+  if (await getStatus(sdk, options, state, profile, longerWildcard)) {
+    return true;
+  }
+
+  for (const char of options.charset) {
+    if (
+      await getStatus(sdk, options, state, profile, `${exactCandidate}${char}*`)
+    ) {
+      return false;
+    }
+  }
+
+  return true;
 };
 
 const isFolder = async (
@@ -1125,8 +1145,6 @@ const enumerateExtensionPrefixes = async (
         return [];
       }
 
-      const exactCandidate = `${baseName}~${numericSuffix}.${candidate}`;
-
       state.onProgress({
         partialEntries: (() => {
           upsertStateEntry(
@@ -1160,7 +1178,17 @@ const enumerateExtensionPrefixes = async (
         matches.push(...nested);
       }
 
-      if (await isLastFileExt(sdk, options, state, profile, exactCandidate)) {
+      if (
+        await isLastFileExt(
+          sdk,
+          options,
+          state,
+          profile,
+          baseName,
+          numericSuffix,
+          candidate,
+        )
+      ) {
         matches.push(candidate);
       }
 
