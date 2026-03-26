@@ -269,7 +269,7 @@ const normalizeOptions = (input: ScanOptions): NormalizedOptions => {
       1,
       9,
     ),
-    maxRequests: clamp(input.maxRequests ?? DEFAULT_MAX_REQUESTS, 50, 5000),
+    maxRequests: clamp(input.maxRequests ?? DEFAULT_MAX_REQUESTS, 50, 10000),
     concurrency: clamp(input.concurrency ?? DEFAULT_CONCURRENCY, 1, 32),
     createFinding: input.createFinding ?? true,
     enumerateShortnames: input.enumerateShortnames ?? false,
@@ -1349,11 +1349,12 @@ const createFindingIfNeeded = async (
   const target = parseTarget(options.targetUrl);
   const origin = buildTargetUrl(target, "").replace(/\/$/, "");
   const dedupeKey = `${REPORTER}:${origin}:${target.pathname}` as DedupeKey;
+  const findingEntries = [...state.partialEntries];
   const description = buildFindingDescription(
     origin,
     target.pathname,
     profile,
-    entries,
+    findingEntries,
     state.requestsSent,
   );
 

@@ -128,6 +128,16 @@ const visibleEntries = (job: ScanJob) => {
   );
 };
 
+const hasVisibleResults = (job: ScanJob) => {
+  return (
+    job.result !== undefined ||
+    job.partialEntries.length > 0 ||
+    visibleEntries(job).length > 0
+  );
+};
+
+const visibleErrors = (job: ScanJob) => job.result?.errors ?? [];
+
 const onSubmit = async () => {
   isStarting.value = true;
   error.value = "";
@@ -264,7 +274,7 @@ onBeforeUnmount(() => {
                   v-model.number="maxRequests"
                   class="rounded-md border border-surface-300 bg-surface-0 px-3 py-2 text-sm outline-none dark:border-surface-600 dark:bg-surface-900"
                   min="50"
-                  max="5000"
+                  max="10000"
                   step="50"
                   type="number"
                 />
@@ -443,7 +453,7 @@ onBeforeUnmount(() => {
               </div>
 
               <div
-                v-if="job.result || job.partialEntries.length > 0"
+                v-if="hasVisibleResults(job)"
                 class="mt-3 grid gap-3 rounded-md border border-surface-200 p-3 text-sm dark:border-surface-700"
               >
                 <div class="flex flex-wrap items-start justify-between gap-3">
@@ -494,6 +504,20 @@ onBeforeUnmount(() => {
                     <span class="font-mono">{{
                       job.result.detection.suffix
                     }}</span>
+                  </div>
+                </div>
+
+                <div
+                  v-if="visibleErrors(job).length > 0"
+                  class="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100"
+                >
+                  <div class="font-medium">Scan errors</div>
+                  <div
+                    v-for="entry in visibleErrors(job)"
+                    :key="entry"
+                    class="mt-1 break-words font-mono text-xs"
+                  >
+                    {{ entry }}
                   </div>
                 </div>
 
