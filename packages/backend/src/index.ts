@@ -989,6 +989,8 @@ const enumerateNamePrefixes = async (
         questionMarkSymbol,
       );
 
+      const matches: string[] = [];
+
       if (
         candidate.length < options.nameMaxLength &&
         fileStatus !== "file-found"
@@ -1002,12 +1004,14 @@ const enumerateNamePrefixes = async (
           questionMarkSymbol,
           candidate,
         );
-        if (nested.length > 0) {
-          return nested;
-        }
+        matches.push(...nested);
       }
 
-      return fileStatus === "no-file" ? [] : [candidate];
+      if (fileStatus !== "no-file") {
+        matches.push(candidate);
+      }
+
+      return matches;
     },
   );
 
@@ -1064,6 +1068,8 @@ const enumerateExtensionPrefixes = async (
         return [];
       }
 
+      const exactCandidate = `${baseName}~${numericSuffix}.${candidate}`;
+
       state.onProgress({
         partialEntries: (() => {
           upsertStateEntry(
@@ -1081,6 +1087,8 @@ const enumerateExtensionPrefixes = async (
         message: `Confirmed extension prefix ${baseName}~${numericSuffix}.${candidate}`,
       });
 
+      const matches: string[] = [];
+
       if (candidate.length < options.extensionMaxLength) {
         const nested = await enumerateExtensionPrefixes(
           sdk,
@@ -1092,20 +1100,14 @@ const enumerateExtensionPrefixes = async (
           numericSuffix,
           candidate,
         );
-        if (nested.length > 0) {
-          return nested;
-        }
+        matches.push(...nested);
       }
 
-      return (await isLastFileExt(
-        sdk,
-        options,
-        state,
-        profile,
-        `${baseName}~${numericSuffix}.${candidate}`,
-      ))
-        ? [candidate]
-        : [];
+      if (await isLastFileExt(sdk, options, state, profile, exactCandidate)) {
+        matches.push(candidate);
+      }
+
+      return matches;
     },
   );
 
