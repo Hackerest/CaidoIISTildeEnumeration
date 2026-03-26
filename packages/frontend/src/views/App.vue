@@ -249,17 +249,15 @@ onBeforeUnmount(() => {
               />
             </label>
 
-            <div
-              class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-1"
-            >
-              <label class="grid gap-1.5">
-                <span class="text-sm font-medium">Charset</span>
-                <input
-                  v-model="charset"
-                  class="rounded-md border border-surface-300 bg-surface-0 px-3 py-2 font-mono text-sm outline-none dark:border-surface-600 dark:bg-surface-900"
-                />
-              </label>
+            <label class="grid gap-1.5">
+              <span class="text-sm font-medium">Charset</span>
+              <input
+                v-model="charset"
+                class="rounded-md border border-surface-300 bg-surface-0 px-3 py-2 font-mono text-sm outline-none dark:border-surface-600 dark:bg-surface-900"
+              />
+            </label>
 
+            <div class="grid gap-4 sm:grid-cols-2">
               <label class="grid gap-1.5">
                 <span class="text-sm font-medium">Request budget</span>
                 <input
@@ -284,9 +282,7 @@ onBeforeUnmount(() => {
               </label>
             </div>
 
-            <div
-              class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-1"
-            >
+            <div class="grid gap-4 sm:grid-cols-3">
               <label class="grid gap-1.5">
                 <span class="text-sm font-medium">Name max</span>
                 <input
@@ -356,7 +352,7 @@ onBeforeUnmount(() => {
                 class="rounded-md border border-surface-300 bg-surface-0 px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-600 dark:bg-surface-900"
                 type="submit"
               >
-                {{ isStarting ? "Starting..." : "Start scan" }}
+                {{ isStarting ? "Starting..." : "Scan" }}
               </button>
               <span
                 class="text-xs leading-5 text-surface-500 dark:text-surface-400"

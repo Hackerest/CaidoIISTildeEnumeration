@@ -349,6 +349,63 @@ const describeEntry = (entry: EnumeratedEntry) => {
     : `${entry.baseName}~${entry.numericSuffix}`;
 };
 
+const formatFindingEntry = (entry: EnumeratedEntry) => {
+  const label =
+    entry.kind === "directory"
+      ? "directory"
+      : entry.kind === "partial"
+        ? "partial"
+        : "file";
+
+  return `- ${describeEntry(entry)} [${label}]`;
+};
+
+const formatFindingEntries = (entries: EnumeratedEntry[]) => {
+  if (entries.length === 0) {
+    return "- None enumerated during this scan";
+  }
+
+  return entries
+    .slice()
+    .sort((left, right) => left.shortName.localeCompare(right.shortName))
+    .map(formatFindingEntry)
+    .join("\n");
+};
+
+const splitFindingEntries = (entries: EnumeratedEntry[]) => {
+  const confirmed = entries.filter((entry) => entry.kind !== "partial");
+  const partial = entries.filter((entry) => entry.kind === "partial");
+
+  return { confirmed, partial };
+};
+
+const buildFindingDescription = (
+  origin: string,
+  targetPath: string,
+  profile: DetectionProfile,
+  entries: EnumeratedEntry[],
+  requestsSent: number,
+) => {
+  const { confirmed, partial } = splitFindingEntries(entries);
+  const detectionDetails = [
+    `- Origin: ${origin}`,
+    `- Directory: ${targetPath}`,
+    `- Method: ${profile.method}`,
+    `- Suffix: ${profile.suffix}`,
+    `- Positive fingerprint: status ${profile.positive.status}, length ${profile.positive.length}`,
+    `- Negative fingerprint: status ${profile.negative.status}, length ${profile.negative.length}`,
+    `- Requests sent: ${requestsSent}`,
+  ].join("\n");
+
+  return (
+    `The target responded differently to wildcard 8.3 short-name probes, which indicates ` +
+    `IIS short-name enumeration is likely enabled for this path.\n\n` +
+    `Detection details\n${detectionDetails}\n\n` +
+    `Confirmed shortnames (${confirmed.length})\n${formatFindingEntries(confirmed)}\n\n` +
+    `Partial results (${partial.length})\n${formatFindingEntries(partial)}`
+  );
+};
+
 const createEntry = (
   options: NormalizedOptions,
   baseName: string,
@@ -1263,6 +1320,7 @@ const createFindingIfNeeded = async (
   entries: EnumeratedEntry[],
   profile: DetectionProfile,
   state: ScanState,
+  errors: string[],
 ) => {
   if (!options.createFinding) {
     return false;
@@ -1291,21 +1349,30 @@ const createFindingIfNeeded = async (
   const target = parseTarget(options.targetUrl);
   const origin = buildTargetUrl(target, "").replace(/\/$/, "");
   const dedupeKey = `${REPORTER}:${origin}:${target.pathname}` as DedupeKey;
-  const names = entries.slice(0, 20).map(describeEntry);
-  const truncated = entries.length > names.length ? "\n- ..." : "";
+  const description = buildFindingDescription(
+    origin,
+    target.pathname,
+    profile,
+    entries,
+    state.requestsSent,
+  );
 
-  await sdk.findings.create({
-    title: "IIS short-name enumeration exposed",
-    reporter: REPORTER,
-    dedupeKey,
-    request,
-    description:
-      `The target responded differently to wildcard 8.3 short-name probes, which indicates ` +
-      `IIS short-name enumeration is likely enabled.\n\n` +
-      `Detection method: ${profile.method}\n` +
-      `Detection suffix: ${profile.suffix}\n` +
-      `Enumerated candidates (${entries.length}):\n- ${names.join("\n- ")}${truncated}`,
-  });
+  try {
+    await sdk.findings.create({
+      title: "IIS short-name enumeration exposed",
+      reporter: REPORTER,
+      dedupeKey,
+      request,
+      description,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    errors.push(`Finding creation failed: ${message}`);
+    state.onProgress({
+      message: `Finding creation failed: ${message}`,
+    });
+    return false;
+  }
 
   return true;
 };
@@ -1428,6 +1495,7 @@ const runScanJob = async (
       entries,
       detection,
       state,
+      errors,
     );
 
     const result: ScanResult = {
